@@ -90,8 +90,8 @@ class Monitor(BaseModel):
     kafkaProducerAllowAutoTopicCreation: bool = False
     kafkaProducerSaslOptions: Optional[dict] = None
 
-    class Config:
-        use_enum_values = True
+class Config:
+    use_enum_values = True
 
 
 class MonitorUpdate(Monitor):
@@ -105,7 +105,7 @@ class MonitorTag(BaseModel):
 
 
 class MonitorsResponse(BaseModel):
-    monitors: List[Dict[str, Any]]
+    monitors: List[Monitor]
 
 class MonitorDashboardResponse(BaseModel):
     monitor: Dict[str, Any]

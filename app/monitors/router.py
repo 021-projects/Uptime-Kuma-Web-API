@@ -17,7 +17,10 @@ router = APIRouter(redirect_slashes=True)
 @router.get("", response_model=MonitorsResponse, description="Get all monitors")
 async def get_monitors(s: JWTSession = Depends(get_jwt_session)):
     try:
-        return {"monitors": s.api.get_monitors()}
+        # Convert each monitor dict to a Monitor object
+        monitors_data = s.api.get_monitors()
+        monitors = [Monitor(**monitor) for monitor in monitors_data]
+        return {"monitors": monitors}
     except Exception as e:
         logging.fatal(e)
         raise HTTPException(500, str(e))
@@ -26,7 +29,9 @@ async def get_monitors(s: JWTSession = Depends(get_jwt_session)):
 @router.get("/{monitor_id}", response_model=Monitor, description="Get monitor by ID")
 async def get_monitor(monitor_id: int = Path(...), s: JWTSession = Depends(get_jwt_session)) -> Monitor:
     try:
-        return s.api.get_monitor(monitor_id)
+        monitor_data = s.api.get_monitor(monitor_id)
+        # Convert dictionary to Monitor object
+        return Monitor(**monitor_data)
     except UptimeKumaException as e:
         logging.info(e)
         raise_monitor_not_found()
