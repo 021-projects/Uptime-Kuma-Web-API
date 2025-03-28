@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
 
 from uptime_kuma_api import MonitorType, AuthMethod
@@ -102,3 +102,17 @@ class MonitorUpdate(Monitor):
 class MonitorTag(BaseModel):
     tag_id: int
     value: Optional[str] = ""
+
+
+class MonitorsResponse(BaseModel):
+    monitors: List[Dict[str, Any]]
+
+class MonitorDashboardResponse(BaseModel):
+    monitor: Dict[str, Any]
+    avgResponseTime: Any
+    uptimes: Dict[str, Any]
+    cert: Any
+    heartbeats: Any = None
+
+class MonitorActionResponse(BaseModel):
+    __root__: Dict[str, Any]

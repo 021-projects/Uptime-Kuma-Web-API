@@ -11,7 +11,7 @@ from .raises import raise_maintenance_not_found
 router = APIRouter(redirect_slashes=True)
 
 
-@router.get("", description="Get all maintenances")
+@router.get("", response_model=List[Maintenance], description="Get all maintenances")
 async def get_maintenances(s: JWTSession = Depends(get_jwt_session)):
     try:
         return s.api.get_maintenances()
@@ -20,7 +20,7 @@ async def get_maintenances(s: JWTSession = Depends(get_jwt_session)):
         raise HTTPException(500, str(e))
 
 
-@router.get("/{maintenance_id}", description="Get maintenances by ID")
+@router.get("/{maintenance_id}", response_model=Maintenance, description="Get maintenances by ID")
 async def get_maintenance(maintenance_id: int = Path(...), s: JWTSession = Depends(get_jwt_session)):
     try:
         return s.api.get_maintenance(maintenance_id)
@@ -32,7 +32,7 @@ async def get_maintenance(maintenance_id: int = Path(...), s: JWTSession = Depen
         raise HTTPException(500, str(e))
 
 
-@router.post("", description="Create a maintenances")
+@router.post("", response_model=Maintenance, description="Create a maintenances")
 async def create_maintenance(maintenance: Maintenance, s: JWTSession = Depends(get_jwt_session)):
     try:
         return s.api.add_maintenance(**maintenance.dict())
@@ -44,7 +44,7 @@ async def create_maintenance(maintenance: Maintenance, s: JWTSession = Depends(g
         raise HTTPException(500, str(e))
 
 
-@router.patch("/{maintenance_id}", description="Update a specific maintenances")
+@router.patch("/{maintenance_id}", response_model=MaintenanceUpdate, description="Update a specific maintenances")
 async def update_maintenance(
         maintenance: MaintenanceUpdate,
         maintenance_id: int = Path(...),
@@ -66,7 +66,7 @@ async def update_maintenance(
         raise HTTPException(500, str(e))
 
 
-@router.delete("/{maintenance_id}", description="Delete a specific Maintenance")
+@router.delete("/{maintenance_id}", response_model=dict, description="Delete a specific Maintenance")
 async def delete_maintenance(maintenance_id: int = Path(...), s: JWTSession = Depends(get_jwt_session)):
     try:
         # kinda dumb the api doesnt check if th id exists he just sends an event

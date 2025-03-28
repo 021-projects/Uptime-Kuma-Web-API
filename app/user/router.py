@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Dict
 
 from fastapi import APIRouter, Depends, HTTPException
 from tortoise.contrib.fastapi import HTTPNotFoundError
@@ -40,7 +40,7 @@ async def get_user(username: str, _s: JWTSession = Depends(get_jwt_session)):
     return await UserResponse.from_queryset_single(User.get(username=username))
 
 
-@router.delete("/{username}", responses={404: {"model": HTTPNotFoundError}})
+@router.delete("/{username}", response_model=Dict[str, bool], responses={404: {"model": HTTPNotFoundError}})
 async def delete_user(username: str, _s: JWTSession = Depends(get_jwt_session)):
     deleted_count = await User.filter(username=username).delete()
     if not deleted_count:

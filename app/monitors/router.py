@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
 from uptime_kuma_api import UptimeKumaException
+from typing import Dict, List, Any
+from pydantic import BaseModel
 
-from .schemas import Monitor, MonitorUpdate, MonitorTag
+from .schemas import Monitor, MonitorUpdate, MonitorTag, MonitorsResponse, MonitorDashboardResponse, MonitorActionResponse
 from auth.schemas import JWTSession
 from auth.dependencies import get_jwt_session
 from config import logger as logging
@@ -12,7 +14,7 @@ from uptimes.utils import get_uptimes
 router = APIRouter(redirect_slashes=True)
 
 
-@router.get("", description="Get all monitors")
+@router.get("", response_model=MonitorsResponse, description="Get all monitors")
 async def get_monitors(s: JWTSession = Depends(get_jwt_session)):
     try:
         return {"monitors": s.api.get_monitors()}
@@ -21,7 +23,7 @@ async def get_monitors(s: JWTSession = Depends(get_jwt_session)):
         raise HTTPException(500, str(e))
 
 
-@router.get("/{monitor_id}", description="Get monitor by ID")
+@router.get("/{monitor_id}", response_model=Monitor, description="Get monitor by ID")
 async def get_monitor(monitor_id: int = Path(...), s: JWTSession = Depends(get_jwt_session)) -> Monitor:
     try:
         return s.api.get_monitor(monitor_id)
@@ -33,7 +35,7 @@ async def get_monitor(monitor_id: int = Path(...), s: JWTSession = Depends(get_j
         raise HTTPException(500, str(e))
 
 
-@router.get("/{monitor_id}/dashboard", description="Get monitors dashboard data")
+@router.get("/{monitor_id}/dashboard", response_model=MonitorDashboardResponse, description="Get monitors dashboard data")
 async def get_monitor_dashboard(
         monitor_id: int = Path(...),
         heartbeat_hours: int = 1,
@@ -92,7 +94,7 @@ async def get_monitor_dashboard(
     return response
 
 
-@router.get("/{monitor_id}/cert", description="Get monitors certificate info")
+@router.get("/{monitor_id}/cert", response_model=Dict[str, Any], description="Get monitors certificate info")
 async def get_monitor_cert_info(monitor_id: int = Path(...), s: JWTSession = Depends(get_jwt_session)):
     try:
         info = s.api.cert_info()
@@ -107,7 +109,7 @@ async def get_monitor_cert_info(monitor_id: int = Path(...), s: JWTSession = Dep
         raise HTTPException(500, str(e))
 
 
-@router.post("", description="Create a monitor")
+@router.post("", response_model=MonitorActionResponse, description="Create a monitor")
 async def create_monitor(monitor: Monitor, s: JWTSession = Depends(get_jwt_session)):
     try:
         return s.api.add_monitor(**monitor.dict())
@@ -119,7 +121,7 @@ async def create_monitor(monitor: Monitor, s: JWTSession = Depends(get_jwt_sessi
         raise HTTPException(500, str(e))
 
 
-@router.patch("/{monitor_id}", description="Update a specific monitor")
+@router.patch("/{monitor_id}", response_model=Dict[str, Any], description="Update a specific monitor")
 async def update_monitor(
         monitor: MonitorUpdate,
         monitor_id: int = Path(...),
@@ -141,7 +143,7 @@ async def update_monitor(
         raise HTTPException(500, str(e))
 
 
-@router.delete("/{monitor_id}", description="Delete a specific monitor")
+@router.delete("/{monitor_id}", response_model=MonitorActionResponse, description="Delete a specific monitor")
 async def delete_monitor(monitor_id: int = Path(...), s: JWTSession = Depends(get_jwt_session)):
     try:
         # kinda dumb the api doesnt check if th id exists he just sends an event
@@ -154,7 +156,7 @@ async def delete_monitor(monitor_id: int = Path(...), s: JWTSession = Depends(ge
         raise HTTPException(500, str(e))
 
 
-@router.post("/{monitor_id}/pause", description="Pause a specific monitor")
+@router.post("/{monitor_id}/pause", response_model=MonitorActionResponse, description="Pause a specific monitor")
 async def pause_monitor(monitor_id: int = Path(...), s: JWTSession = Depends(get_jwt_session)):
     try:
         return s.api.pause_monitor(monitor_id)
@@ -166,7 +168,7 @@ async def pause_monitor(monitor_id: int = Path(...), s: JWTSession = Depends(get
         raise HTTPException(500, str(e))
 
 
-@router.post("/{monitor_id}/resume", description="Resume a specific monitor")
+@router.post("/{monitor_id}/resume", response_model=MonitorActionResponse, description="Resume a specific monitor")
 async def resume_monitor(monitor_id: int = Path(...), s: JWTSession = Depends(get_jwt_session)):
     try:
         return s.api.resume_monitor(monitor_id)
@@ -178,7 +180,7 @@ async def resume_monitor(monitor_id: int = Path(...), s: JWTSession = Depends(ge
         raise HTTPException(500, str(e))
 
 
-@router.get("/{monitor_id}/beats", description="Get monitor beats in the last N hours ( by default its 1 hour) ")
+@router.get("/{monitor_id}/beats", response_model=List[Dict[str, Any]], description="Get monitor beats in the last N hours ( by default its 1 hour) ")
 async def monitor_beats(
         monitor_id: int = Path(...),
         hours: int = 1,
@@ -194,7 +196,7 @@ async def monitor_beats(
         raise HTTPException(500, str(e))
 
 
-@router.post("/{monitor_id}/tag", description="Add an already created tag to a specific monitors")
+@router.post("/{monitor_id}/tag", response_model=MonitorActionResponse, description="Add an already created tag to a specific monitors")
 async def add_monitor_tag(
         tag: MonitorTag,
         monitor_id: int = Path(...),
@@ -210,7 +212,7 @@ async def add_monitor_tag(
         raise HTTPException(500, str(e))
 
 
-@router.delete("/{monitor_id}/tag", description="Delete a tag from a specific monitors")
+@router.delete("/{monitor_id}/tag", response_model=MonitorActionResponse, description="Delete a tag from a specific monitors")
 async def delete_monitor_tag(
         tag: MonitorTag,
         monitor_id: int = Path(...),
