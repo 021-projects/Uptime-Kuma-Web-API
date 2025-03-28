@@ -55,7 +55,7 @@ You will connect with those credentials:
 - Multi user Kuma api ( without privilege YET!!) with a small SQLite db
 - Easy to use REST API with most of the Uptime-Kuma features
 - Swagger Docs
-- Dockerized [UptimeKuma_RestAPI Image](https://hub.docker.com/repository/docker/medaziz11/uptimekuma_restapi)
+- Dockerized [UptimeKuma_RestAPI Image](https://hub.docker.com/r/alexdresko/uptimekuma_restapi)
 - Multi-architecture support (amd64, arm64)
 
 ### Example :
@@ -65,17 +65,17 @@ You can simply create a docker compose file like this :
 ```yaml
 services:
   kuma:
-    container_name: uptimes-kuma
-    image: louislam/uptimes-kuma:latest
+    container_name: uptime-kuma
+    image: louislam/uptime-kuma:latest
     ports:
       - "3001:3001"
     restart: always
     volumes:
-      - uptimes-kuma:/app/data
+      - uptime-kuma:/app/data
 
   api:
     container_name: backend
-    image: medaziz11/uptimekuma_restapi
+    image: alexdresko/uptimekuma_restapi
     volumes:
       - api:/db
     restart: always

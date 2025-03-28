@@ -9,7 +9,7 @@ services:
       - uptime-kuma:/app/data
   api:
     build: .
-    # image: medaziz11/uptimekuma_restapi:1.2
+    image: alexdresko/uptimekuma_restapi:latest
     volumes:
       - api:/db
     restart: always

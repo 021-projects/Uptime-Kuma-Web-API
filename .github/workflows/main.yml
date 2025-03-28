@@ -1,10 +1,11 @@
-name: Stellar Docker Image CI
+name: Docker Image Build and Push
 
 on:
   push:
     branches:
       - main
       - develop
+      - v-alex
     tags:
       - "v*.*.*"
 
@@ -12,10 +13,11 @@ on:
     branches:
       - main
       - develop
+      - v-alex
 
 env:
-  DOCKERHUB_REPO: ${{ vars.DOCKERHUB_REPO || 'medaziz11' }}
-  DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE || 'uptimekuma_restapi' }}
+  DOCKERHUB_REPO: alexdresko
+  DOCKERHUB_IMAGE: uptimekuma_restapi
   CACHE_PATH: /tmp/.buildx-cache
 
 jobs:
@@ -29,16 +31,6 @@ jobs:
       # Set up Docker Buildx for building images with BuildKit
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
-      # Cache Docker layers for faster builds
-#       - name: Cache Docker layers
-#         uses: actions/cache@v3
-#         with:
-#           path: ${{ env.CACHE_PATH }}
-#           key: ${{ runner.os }}-buildx-${{ github.ref }}-${{ hashFiles('**/Dockerfile') }}
-#           restore-keys: |
-#             ${{ runner.os }}-buildx-${{ github.ref }}-
-#             ${{ runner.os }}-buildx-
 
       # Log in to Docker Hub using the provided secrets
       - name: Login to Docker Hub
@@ -72,7 +64,6 @@ jobs:
           
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
 
-
       # Build, test, and push the Docker image
       - name: Build, Test, and Push Docker image
         uses: docker/build-push-action@v4
@@ -81,27 +72,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.image_tags.outputs.tags }}
-#           cache-from: type=local,src=${{ env.CACHE_PATH }}
           cache-to: type=local,dest=${{ env.CACHE_PATH }}
-
-      # FUTURE TESTS?
-      # # Test the built Docker image
-      # - name: Run container structure tests
-      #   run: |
-      #     docker run -v $(pwd)/test:/test -v /var/run/docker.sock:/var/run/docker.sock \
-      #       gcr.io/gcp-runtimes/container-structure-test:v1.12.0 \
-      #       test --image ${{ env.DOCKERHUB_REPO }}/${{ env.DOCKERHUB_IMAGE }}:${{ matrix.branch }}-${{ matrix.platform }} \
-      #       --config /test/structure-test-config.yaml
-
-      # # Scan the built Docker image for security vulnerabilities
-      # - name: Scan Docker image for vulnerabilities
-      #   run: |
-      #     IMAGE_TAG=${{ matrix.branch }}-${{ env.PLATFORM_TAG }}
-      #     docker pull ${{ env.DOCKERHUB_REPO }}/${{ env.DOCKERHUB_IMAGE }}:${IMAGE_TAG}
-      #     docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-      #       aquasec/trivy:latest \
-      #       --exit-code 1 \
-      #       --severity CRITICAL,HIGH \
-      #       --ignore-unfixed \
-      #       ${{ env.DOCKERHUB_REPO }}
 
