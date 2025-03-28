@@ -1,14 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
+from typing import Dict, Any
+from pydantic import BaseModel
 
 from config import logger as logging
 from auth.schemas import JWTSession
 from auth.dependencies import get_jwt_session
 from .schemas import Backup, ImportHandleType
 
+class BackupResponse(BaseModel):
+    __root__: Dict[str, Any]
+
 router = APIRouter(redirect_slashes=True)
 
 
-@router.post("/upload-backup", description="Upload a Backup")
+@router.post("/upload-backup", response_model=BackupResponse, description="Upload a Backup")
 async def upload_backup(
         backup: Backup,
         import_handle: ImportHandleType,
